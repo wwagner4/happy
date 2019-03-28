@@ -34,9 +34,9 @@ public class EasingMain {
             yData[i] = d.get(i).getRight();
         }
         XYChart chart = QuickChart.getChart("Sample Chart", "X", "Y", "y(x)", xData, yData);
-        new SwingWrapper(chart).displayChart();
-        BitmapEncoder.saveBitmap(chart, "./Sample_Chart", BitmapEncoder.BitmapFormat.PNG);
-        BitmapEncoder.saveBitmapWithDPI(chart, "./Sample_Chart_300_DPI", BitmapEncoder.BitmapFormat.PNG, 300);
+        //new SwingWrapper(chart).displayChart();
+        BitmapEncoder.saveBitmap(chart, "target/Sample_Chart", BitmapEncoder.BitmapFormat.PNG);
+        //BitmapEncoder.saveBitmapWithDPI(chart, "./Sample_Chart_300_DPI", BitmapEncoder.BitmapFormat.PNG, 300);
     }
 
 }
