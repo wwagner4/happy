@@ -12,11 +12,12 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class EasingMain {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+
+        boolean plot = true;
 
         List<Cfg> cfgsa = Arrays.asList(
                 new Cfg("1 A", 20, 64),
@@ -48,17 +49,20 @@ public class EasingMain {
                 new Cfg("C B", 48, 800),
                 new Cfg("D B", 50, 896)
         );
-        cfgsa.forEach(EasingMain::runCfg);
-        cfgsb.forEach(EasingMain::runCfg);
+        cfgsa.forEach(cfg -> runCfg(cfg, plot));
+        cfgsb.forEach(cfg -> runCfg(cfg, plot));
     }
 
-    private static void runCfg(Cfg cfg) {
-        Stream<Pair<Double, Double>> data = IntStream.range(0, cfg.n + 1)
+    private static void runCfg(Cfg cfg, boolean plot) {
+        List<Pair<Double, Double>> data = IntStream.range(0, cfg.n + 1)
                 .mapToDouble(i -> i)
                 .mapToObj(d -> new ImmutablePair<>(d, Sin.f().apply(transform1(d, cfg.n))))
-                .map(p -> new ImmutablePair<>(p.getLeft(), transform(p.getRight(), cfg.len)));
+                .map(p -> new ImmutablePair<>(p.getLeft(), transform(p.getRight(), cfg.len)))
+                .collect(Collectors.toList());
         table(cfg, data);
-        //plot(data);
+        if (plot) {
+            plot(cfg, data);
+        }
     }
 
     private static double transform(double val, double max) {
@@ -73,25 +77,28 @@ public class EasingMain {
         return a + k * val;
     }
 
-    private static void table(Cfg cfg, Stream<Pair<Double, Double>> data) {
+    static void table(Cfg cfg, List<Pair<Double, Double>> data) {
         data.forEach(p -> System.out.printf("%5s %5.0f %5.2f%n", cfg.name, p.getLeft(), p.getRight()));
     }
 
-    private static void plot(Stream<Pair<Double, Double>> data) throws IOException {
-        List<Pair<Double, Double>> d = data.collect(Collectors.toList());
+    static void plot(Cfg cfg, List<Pair<Double, Double>> data) {
 
-        double[] xData = new double[d.size()];
-        double[] yData = new double[d.size()];
-        for (int i = 0; i < d.size(); i++) {
-            xData[i] = d.get(i).getLeft();
-            yData[i] = d.get(i).getRight();
+        try {
+            double[] xData = new double[data.size()];
+            double[] yData = new double[data.size()];
+            for (int i = 0; i < data.size(); i++) {
+                xData[i] = data.get(i).getLeft();
+                yData[i] = data.get(i).getRight();
+            }
+            XYChart chart = QuickChart.getChart("Sample Chart", "X", "Y", "y(x)", xData, yData);
+
+            String name = "target/Sample_Chart_" + cfg.name;
+            BitmapEncoder.saveBitmap(chart, name, BitmapEncoder.BitmapFormat.PNG);
+
+            System.out.println("Wrote chart to " + name);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
-        XYChart chart = QuickChart.getChart("Sample Chart", "X", "Y", "y(x)", xData, yData);
-
-        String name = "target/Sample_Chart";
-        BitmapEncoder.saveBitmap(chart, name, BitmapEncoder.BitmapFormat.PNG);
-
-        System.out.println("Wrote chart to " + name);
     }
 
 }
