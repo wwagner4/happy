@@ -16,47 +16,31 @@ import java.util.stream.Stream;
 
 public class EasingMain {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
-        List<Cfg> cfgsa = Arrays.asList(
-                new Cfg("1 A", 20, 64),
-                new Cfg("2 A", 23, 128),
-                new Cfg("3 A", 25, 192),
-                new Cfg("4 A", 28, 256),
-                new Cfg("5 A", 30, 320),
-                new Cfg("6 A", 33, 384),
-                new Cfg("7 A", 35, 448),
-                new Cfg("8 A", 38, 512),
-                new Cfg("9 A", 40, 576),
-                new Cfg("A A", 43, 640),
-                new Cfg("B A", 45, 704),
-                new Cfg("C A", 48, 768),
-                new Cfg("D A", 50, 864)
-        );
         List<Cfg> cfgsb = Arrays.asList(
-                new Cfg("1 B", 20, 96),
-                new Cfg("2 B", 23, 160),
-                new Cfg("3 B", 25, 224),
-                new Cfg("4 B", 28, 288),
-                new Cfg("5 B", 30, 352),
-                new Cfg("6 B", 33, 416),
-                new Cfg("7 B", 35, 480),
-                new Cfg("8 B", 38, 544),
-                new Cfg("9 B", 40, 608),
-                new Cfg("A B", 43, 672),
-                new Cfg("B B", 45, 736),
-                new Cfg("C B", 48, 800),
-                new Cfg("D B", 50, 896)
+                new Cfg("1", 20, 96),
+                new Cfg("2", 23, 160),
+                new Cfg("3", 25, 224),
+                new Cfg("4", 28, 288),
+                new Cfg("5", 30, 352),
+                new Cfg("6", 33, 416),
+                new Cfg("7", 35, 480),
+                new Cfg("8", 38, 544),
+                new Cfg("9", 40, 608),
+                new Cfg("A", 43, 672),
+                new Cfg("B", 45, 736),
+                new Cfg("C", 48, 800),
+                new Cfg("D", 50, 896)
         );
-        cfgsa.forEach(EasingMain::runCfg);
         cfgsb.forEach(EasingMain::runCfg);
     }
 
     private static void runCfg(Cfg cfg) {
-        Stream<Pair<Double, Double>> data = IntStream.range(0, cfg.n + 1)
+        Stream<Diff> data = IntStream.range(0, cfg.n + 1)
                 .mapToDouble(i -> i)
-                .mapToObj(d -> new ImmutablePair<>(d, Sin.f().apply(transform1(d, cfg.n))))
-                .map(p -> new ImmutablePair<>(p.getLeft(), transform(p.getRight(), cfg.len)));
+                .mapToObj(d -> new ImmutablePair<>(Double.valueOf(d).intValue(), Sin.f().apply(transform1(d, cfg.n))))
+                .map(p -> new Diff(p.getLeft(), transform(p.getRight(), cfg.len), 0.0));
         table(cfg, data);
         //plot(data);
     }
@@ -73,25 +57,8 @@ public class EasingMain {
         return a + k * val;
     }
 
-    private static void table(Cfg cfg, Stream<Pair<Double, Double>> data) {
-        data.forEach(p -> System.out.printf("%5s %5.0f %5.2f%n", cfg.name, p.getLeft(), p.getRight()));
-    }
-
-    private static void plot(Stream<Pair<Double, Double>> data) throws IOException {
-        List<Pair<Double, Double>> d = data.collect(Collectors.toList());
-
-        double[] xData = new double[d.size()];
-        double[] yData = new double[d.size()];
-        for (int i = 0; i < d.size(); i++) {
-            xData[i] = d.get(i).getLeft();
-            yData[i] = d.get(i).getRight();
-        }
-        XYChart chart = QuickChart.getChart("Sample Chart", "X", "Y", "y(x)", xData, yData);
-
-        String name = "target/Sample_Chart";
-        BitmapEncoder.saveBitmap(chart, name, BitmapEncoder.BitmapFormat.PNG);
-
-        System.out.println("Wrote chart to " + name);
+    private static void table(Cfg cfg, Stream<Diff> data) {
+        data.forEach(p -> System.out.printf("%5s %5d %5.2f %5.2f%n", cfg.name, p.nr, p.abs, p.rel));
     }
 
 }
@@ -120,4 +87,16 @@ class Sin {
         };
     }
 
+}
+
+class Diff {
+    final int nr;
+    final double abs;
+    final double rel;
+
+    Diff(int nr, double abs, double rel) {
+        this.nr = nr;
+        this.abs = abs;
+        this.rel = rel;
+    }
 }
