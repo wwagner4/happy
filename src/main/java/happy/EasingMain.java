@@ -1,16 +1,10 @@
 package happy;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.knowm.xchart.BitmapEncoder;
-import org.knowm.xchart.QuickChart;
-import org.knowm.xchart.XYChart;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
