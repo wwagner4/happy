@@ -27,16 +27,15 @@ public class EasingMain {
                 new Cfg("C", 48, 800),
                 new Cfg("D", 50, 896)
         );
-        cfgsb.forEach(EasingMain::runCfg);
+        Stream<Diff> data = cfgsb.stream().flatMap(EasingMain::runCfg);
+        data.forEach(p -> System.out.printf("%5s %5d %10.2f %10.2f %10.0f%n", p.nam, p.nr, p.abs, p.rel, p.rel));
     }
 
-    private static void runCfg(Cfg cfg) {
-        Stream<Diff> data = IntStream.range(0, cfg.n + 1)
+    private static Stream<Diff> runCfg(Cfg cfg) {
+        return IntStream.range(0, cfg.n + 1)
                 .mapToDouble(i -> i)
-                .mapToObj(d -> new ImmutablePair<>(Double.valueOf(d).intValue(), Sin.f().apply(transform1(d, cfg.n))))
-                .map(p -> new Diff(p.getLeft(), transform(p.getRight(), cfg.len), 0.0));
-        table(cfg, data);
-        //plot(data);
+                .mapToObj(d -> new Diff(cfg.name, Double.valueOf(d).intValue(), Sin.f().apply(transform1(d, cfg.n)), Sin.f().apply(transform1(Math.max(d - 1, 0.0), cfg.n))))
+                .map(p -> new Diff(cfg.name, p.nr, transform(p.abs, cfg.len), transform(p.abs, cfg.len) - transform(p.rel, cfg.len)));
     }
 
     private static double transform(double val, double max) {
@@ -49,10 +48,6 @@ public class EasingMain {
         double a = -1;
         double k = 2.0 / n;
         return a + k * val;
-    }
-
-    private static void table(Cfg cfg, Stream<Diff> data) {
-        data.forEach(p -> System.out.printf("%5s %5d %5.2f %5.2f%n", cfg.name, p.nr, p.abs, p.rel));
     }
 
 }
@@ -84,11 +79,13 @@ class Sin {
 }
 
 class Diff {
+    final String nam;
     final int nr;
     final double abs;
     final double rel;
 
-    Diff(int nr, double abs, double rel) {
+    Diff(String nam, int nr, double abs, double rel) {
+        this.nam = nam;
         this.nr = nr;
         this.abs = abs;
         this.rel = rel;
