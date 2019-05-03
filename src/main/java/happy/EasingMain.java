@@ -1,10 +1,8 @@
 package happy;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -28,7 +26,27 @@ public class EasingMain {
                 new Cfg("D", 50, 896)
         );
         Stream<Diff> data = cfgsb.stream().flatMap(EasingMain::runCfg);
-        data.forEach(p -> System.out.printf("%5s %5d %10.2f %10.2f %10.0f%n", p.nam, p.nr, p.abs, p.rel, p.rel));
+
+        Map<String, List<Diff>> grps = data.collect(Collectors.groupingBy(p -> p.nam));
+        grps.entrySet().stream()
+                .sorted(Comparator.comparing(es -> es.getKey()))
+                .forEach(es -> System.out.printf("%5s | %s%n", es.getKey(), format(es.getValue())));
+    }
+
+    private static String format(List<Diff> diffs) {
+        return tail(diffs).stream()
+                .map(d -> String.format("%3.0f", d.rel))
+                .collect(Collectors.joining(""));
+    }
+
+    private static <T> List<T> tail(List<T> in) {
+        List<T> re = new ArrayList<>();
+        for (int i = 0; i < in.size(); i++) {
+            if (i > 0) {
+                re.add(in.get(i));
+            }
+        }
+        return re;
     }
 
     private static Stream<Diff> runCfg(Cfg cfg) {
